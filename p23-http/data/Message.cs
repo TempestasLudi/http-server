@@ -10,7 +10,7 @@ namespace com.tempestasludi.c.p23_http.data
 	public abstract class Message
 	{
 		public string Protocol = "HTTP/1.1";
-		public Dictionary<string, string> Headers = new Dictionary<string, string>();
+		public List<(string, string)> Headers = new List<(string, string)>();
 
 		public byte[] Content;
 		
@@ -32,9 +32,9 @@ namespace com.tempestasludi.c.p23_http.data
 			return builder.ToString();
 		}
 
-		private static Dictionary<string, string> ReadHeaders(Stream stream, Dictionary<string, Action<string>> headerActions)
+		private static List<(string, string)> ReadHeaders(Stream stream, Dictionary<string, Action<string>> headerActions)
 		{
-			var headers = new Dictionary<string, string>();
+			var headers = new List<(string, string)>();
 			string[] lineParts;
 			do
 			{
@@ -50,7 +50,7 @@ namespace com.tempestasludi.c.p23_http.data
 				}
 				else
 				{
-					headers[lineParts[0]] = lineParts[1];
+					headers.Add((lineParts[0], lineParts[1]));
 				}
 			} while (lineParts.Length > 1);
 			return headers;
@@ -88,15 +88,15 @@ namespace com.tempestasludi.c.p23_http.data
 
 		protected abstract string GetHeaderLine();
 
-		protected virtual Dictionary<string, string> GetHeaders()
+		protected virtual List<(string, string)> GetHeaders()
 		{
-			var headers = new Dictionary<string, string>(Headers);
-			if (Connection != null) headers["Connection"] = Connection;
-			if (ContentLength > 0) headers["Content-Length"] = ContentLength.ToString();
-			if (ContentType != null) headers["Content-Type"] = ContentType;
-			headers["Date"] = Date.ToString("r");
-			if (Upgrade != null) headers["Upgrade"] = Upgrade;
-			if (TransferEncoding.GetType() != typeof(Identity)) headers["Transfer-Encoding"] = TransferEncoding.Name;
+			var headers = new List<(string, string)>(Headers);
+			if (Connection != null) headers.Add(("Connection", Connection));
+			if (ContentLength > 0) headers.Add(("Content-Length", ContentLength.ToString()));
+			if (ContentType != null) headers.Add(("Content-Type", ContentType));
+			headers.Add(("Date", Date.ToString("r")));
+			if (Upgrade != null) headers.Add(("Upgrade", Upgrade));
+			if (TransferEncoding.GetType() != typeof(Identity)) headers.Add(("Transfer-Encoding", TransferEncoding.Name));
 			return headers;
 		}
 
@@ -104,7 +104,7 @@ namespace com.tempestasludi.c.p23_http.data
 		{
 			return Encoding.UTF8
 				.GetBytes(
-					GetHeaderLine() + GetHeaders().Select(pair => $"{pair.Key}: {pair.Value}").Aggregate("", (a, b) => $"{a}\r\n{b}") +
+					GetHeaderLine() + GetHeaders().Select(pair => $"{pair.Item1}: {pair.Item2}").Aggregate("", (a, b) => $"{a}\r\n{b}") +
 					"\r\n\r\n").ToArray();
 		}
 
