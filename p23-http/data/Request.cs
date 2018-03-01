@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace com.tempestasludi.c.p23_http.data
 {
@@ -8,6 +9,8 @@ namespace com.tempestasludi.c.p23_http.data
 	{
 		public string Method;
 		public string Uri;
+		
+		public List<Cookie> Cookies = new List<Cookie>();
 		public string Host;
 		public string Origin;
 
@@ -23,6 +26,7 @@ namespace com.tempestasludi.c.p23_http.data
 				},
 				new Dictionary<string, Action<Request, string>>
 				{
+					{"cookie", (request, cookies) => request.Cookies = cookies.Split(";".ToCharArray()).Select(s => Cookie.Read(s.Trim())).ToList()},
 					{"host", (request, host) => request.Host = host},
 					{"origin", (request, origin) => request.Origin = origin}
 				}
@@ -34,11 +38,12 @@ namespace com.tempestasludi.c.p23_http.data
 			return $"{Method} {Uri} {Protocol}";
 		}
 
-		protected override Dictionary<string, string> GetHeaders()
+		protected override List<(string, string)> GetHeaders()
 		{
 			var headers = base.GetHeaders();
-			if (Host != null) headers["Host"] = Host;
-			if (Origin != null) headers["Origin"] = Origin;
+			if (Cookies.Count > 0) headers.Add(("Cookie", Cookies.Select(cookie => cookie.ToString()).Aggregate((a, b) => $"{a}; {b}")));
+			if (Host != null) headers.Add(("Host", Host));
+			if (Origin != null) headers.Add(("Origin", Origin));
 			return headers;
 		}
 	}

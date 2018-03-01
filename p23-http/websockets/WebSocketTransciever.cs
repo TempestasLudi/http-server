@@ -28,8 +28,8 @@ namespace com.tempestasludi.c.p23_http.websockets
 				Status = "Switching Protocols",
 				Headers =
 				{
-					["Sec-Websocket-Accept"] = Convert.ToBase64String(new SHA1CryptoServiceProvider().ComputeHash(
-						Encoding.ASCII.GetBytes(request.Headers["sec-websocket-key"] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")))
+					("Sec-Websocket-Accept", Convert.ToBase64String(new SHA1CryptoServiceProvider().ComputeHash(
+						Encoding.ASCII.GetBytes(request.Headers.Find(h => h.Item1 == "sec-websocket-key").Item1 + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))))
 				}
 			}.Write(stream);
 		}
