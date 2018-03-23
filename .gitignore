@@ -1,0 +1,5 @@
+*.sln
+.idea
+*/bin
+*/obj
+packages/
