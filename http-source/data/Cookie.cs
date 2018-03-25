@@ -81,5 +81,36 @@ namespace com.tempestasludi.c.http_source.data
         }).Where(t => t != null)
         .Aggregate((a, b) => $"{a}; {b}");
     }
+
+    protected bool Equals(Cookie other)
+    {
+      return string.Equals(Name, other.Name) && string.Equals(Value, other.Value) &&
+             string.Equals(Domain, other.Domain) && string.Equals(Path, other.Path) && Expires.Equals(other.Expires) &&
+             MaxAge == other.MaxAge && Secure == other.Secure && HttpOnly == other.HttpOnly;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (ReferenceEquals(null, obj)) return false;
+      if (ReferenceEquals(this, obj)) return true;
+      if (obj.GetType() != this.GetType()) return false;
+      return Equals((Cookie) obj);
+    }
+
+    public override int GetHashCode()
+    {
+      unchecked
+      {
+        var hashCode = (Name != null ? Name.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ (Value != null ? Value.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ (Domain != null ? Domain.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ (Path != null ? Path.GetHashCode() : 0);
+        hashCode = (hashCode * 397) ^ Expires.GetHashCode();
+        hashCode = (hashCode * 397) ^ MaxAge.GetHashCode();
+        hashCode = (hashCode * 397) ^ Secure.GetHashCode();
+        hashCode = (hashCode * 397) ^ HttpOnly.GetHashCode();
+        return hashCode;
+      }
+    }
   }
 }
