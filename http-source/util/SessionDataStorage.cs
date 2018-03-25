@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace com.tempestasludi.c.p23_http.util
+namespace com.tempestasludi.c.http_source.util
 {
   
   /// <summary>
