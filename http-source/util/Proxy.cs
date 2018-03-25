@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -22,8 +23,6 @@ namespace com.tempestasludi.c.http_source.util
 
     public void Run(Stream clientStream, Request request)
     {
-      var isRunning = true;
-
       using (var serverClient = new TcpClient())
       {
         serverClient.Connect(_host, _hostPort);
@@ -37,35 +36,40 @@ namespace com.tempestasludi.c.http_source.util
         request.Write(serverStream);
 
         var threads = new List<Thread>();
-        var halter = new Thread(() =>
-        {
-          isRunning = false;
-          threads.ForEach(t => t.Abort());
-        });
-        threads = new(Stream, Stream)[] {(clientStream, serverStream), (serverStream, clientStream)}.Select(tuple =>
-        {
-          var from = tuple.Item1;
-          var to = tuple.Item2;
-          var thread = new Thread(() =>
-          {
-            var buffer = new byte[1024];
-            while (isRunning)
+        var halter = new Thread(() => threads.ForEach(t => t.Abort()));
+
+        threads = new(Stream, Stream)[] {(clientStream, serverStream), (serverStream, clientStream)}
+          .Select(streams => new Thread(() =>
             {
-              try
+              var (from, to) = streams;
+              var buffer = new byte[1024];
+              while (true)
               {
-                var length = from.Read(buffer, 0, buffer.Length);
-                to.Write(buffer, 0, length);
+                try
+                {
+                  var length = from.Read(buffer, 0, buffer.Length);
+                  if (length == 0)
+                  {
+                    break;
+                  }
+
+                  if (length > 0)
+                  {
+                    to.Write(buffer, 0, length);
+                  }
+                }
+                catch (Exception e)
+                {
+                  if (e is IOException || e is ObjectDisposedException)
+                  {
+                    break;
+                  }
+                }
               }
-              catch (IOException)
-              {
-                halter.Start();
-                break;
-              }
+              halter.Start();
             }
-          });
-          thread.Start();
-          return thread;
-        }).ToList();
+          )).ToList();
+        threads.ForEach(thread => thread.Start());
         threads.ForEach(thread => thread.Join());
       }
     }

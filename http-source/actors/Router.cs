@@ -74,7 +74,8 @@ namespace com.tempestasludi.c.http_source.actors
     {
       var uri = request.Uri;
       var host = request.Host ?? "";
-      var usedRoute = _routes.SkipWhile(route => route.PathRegex.IsMatch(uri) && route.HostRegex.IsMatch(host))
+
+      var usedRoute = _routes.SkipWhile(route => !(route.PathRegex.IsMatch(uri) && route.HostRegex.IsMatch(host)))
         .FirstOrDefault();
 
       if (usedRoute != null)
