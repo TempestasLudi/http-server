@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace com.tempestasludi.c.p23_http.data.transferEncodings
+namespace com.tempestasludi.c.http_source.data.transferEncodings
 {
 	public class Chunked : TransferEncoding
 	{

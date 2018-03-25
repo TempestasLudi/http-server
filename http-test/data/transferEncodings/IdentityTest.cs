@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Text;
-using com.tempestasludi.c.p23_http.data.transferEncodings;
+using com.tempestasludi.c.http_source.data.transferEncodings;
 using NUnit.Framework;
 using Moq;
 
-namespace p23_http_test.data.transferEncodings
+namespace com.tempestasludi.c.http_test.data.transferEncodings
 {
   [TestFixture]
   public class IdentityTest

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace com.tempestasludi.c.p23_http.data
+namespace com.tempestasludi.c.http_source.data
 {
   public class Cookie
   {

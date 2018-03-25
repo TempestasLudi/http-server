@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using com.tempestasludi.c.p23_http.data.transferEncodings;
+using com.tempestasludi.c.http_source.data.transferEncodings;
 
-namespace com.tempestasludi.c.p23_http.data
+namespace com.tempestasludi.c.http_source.data
 {
 	public abstract class Message
 	{
