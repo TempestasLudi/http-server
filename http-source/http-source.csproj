@@ -54,6 +54,7 @@
     <Compile Include="data\transferEncodings\Identity.cs" />
     <Compile Include="data\transferEncodings\TransferEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="util\Proxy.cs" />
     <Compile Include="util\SessionDataStorage.cs" />
     <Compile Include="websockets\WebSocketListener.cs" />
     <Compile Include="websockets\WebSocketTransciever.cs" />
