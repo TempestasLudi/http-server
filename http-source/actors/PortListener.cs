@@ -3,9 +3,9 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using com.tempestasludi.c.p23_http.data;
+using com.tempestasludi.c.http_source.data;
 
-namespace com.tempestasludi.c.p23_http.actors
+namespace com.tempestasludi.c.http_source.actors
 {
 	public class PortListener
 	{
