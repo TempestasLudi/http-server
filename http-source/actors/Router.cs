@@ -2,26 +2,33 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using com.tempestasludi.c.http_source.data;
 
 namespace com.tempestasludi.c.http_source.actors
 {
   public class Router
   {
-    private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>
-    {
-      {"txt", "text/plain"},
-      {"json", "application/json"},
-      {"xml", "application/xml"},
-      {"html", "text/html"},
-      {"js", "application/javascript"},
-      {"css", "text/css"},
-      {"xsl", "text/xsl"}
-    };
+    private readonly Dictionary<string, string> _mimeTypes;
 
     private readonly List<Route> _routes = new List<Route>();
+
+    private readonly RouterConfig _config;
+
+    public Router(RouterConfig config)
+    {
+      _config = config;
+
+      _mimeTypes = XDocument.Load(config.MimeTypesFile).Root?.Elements("type").ToDictionary(
+        e => e.Element("extension")?.Value,
+        e => e.Element("mime")?.Value
+      );
+      if (_mimeTypes == null)
+      {
+        throw new FileNotFoundException("The mime types file was not found");
+      }
+    }
 
     public void AddRoute(Action<Stream, Request> requestHandler, Regex path=null, Regex host=null, bool closeConnection = true)
     {
@@ -47,26 +54,21 @@ namespace com.tempestasludi.c.http_source.actors
         }
         catch (InvalidOperationException)
         {
-          new Response
-          {
-            Content = Encoding.UTF8.GetBytes("<html><body><h1>Not Found</h1></body></html>"),
-            ContentType = "text/html",
-            Status = "Not Found",
-            StatusCode = 404
-          }.Write(stream);
+          SendFile(stream, Path.Combine(_config.ErrorPagesDirectory, "404.html"), (404, "Not Found"));
         }
       }, path, host);
     }
 
-    private static void SendFile(Stream stream, string path)
+    private void SendFile(Stream stream, string path, (int, string)? status = null)
     {
       var extension = Path.GetExtension(path)?.Substring(1) ?? "";
+      var (statusCode, statusName) = status ?? (200, "OK");
       new Response
       {
         Content = File.ReadAllBytes(path),
-        ContentType = MimeTypes.ContainsKey(extension) ? MimeTypes[extension] : null,
-        Status = "OK",
-        StatusCode = 200
+        ContentType = _mimeTypes.ContainsKey(extension) ? _mimeTypes[extension] : null,
+        Status = statusName,
+        StatusCode = statusCode
       }.Write(stream);
     }
 
@@ -80,19 +82,24 @@ namespace com.tempestasludi.c.http_source.actors
 
       if (usedRoute != null)
       {
-        usedRoute?.RequestHandler(stream, request);
+        usedRoute.RequestHandler(stream, request);
         return usedRoute.CloseConnection;
       }
-
-      new Response
-      {
-        Content = Encoding.UTF8.GetBytes("<html><body><h1>Not Found</h1></body></html>"),
-        ContentType = "text/html",
-        Status = "Not Found",
-        StatusCode = 404
-      }.Write(stream);
+      
+      SendFile(stream, Path.Combine(_config.ErrorPagesDirectory, "404.html"), (404, "Not Found"));
 
       return true;
+    }
+  }
+
+  public class RouterConfig
+  {
+    public string ErrorPagesDirectory;
+    public string MimeTypesFile = "config/mime-types.xml";
+
+    public RouterConfig(string errorPagesDirectory)
+    {
+      ErrorPagesDirectory = errorPagesDirectory;
     }
   }
 
