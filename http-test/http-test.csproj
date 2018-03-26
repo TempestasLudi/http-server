@@ -58,13 +58,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\p23-http\p23-http.csproj">
-      <Project>{3122057C-631E-49B7-999D-C20E202ADFF7}</Project>
-      <Name>p23-http</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\http-source\http-source.csproj">
+      <Project>{3122057c-631e-49b7-999d-c20e202adff7}</Project>
+      <Name>http-source</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
