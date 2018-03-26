@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using com.tempestasludi.c.http_source.data;
 
 namespace com.tempestasludi.c.http_source.actors
@@ -20,17 +22,35 @@ namespace com.tempestasludi.c.http_source.actors
     {
       _config = config;
 
-      _mimeTypes = XDocument.Load(config.MimeTypesFile).Root?.Elements("type").ToDictionary(
-        e => e.Element("extension")?.Value,
-        e => e.Element("mime")?.Value
-      );
-      if (_mimeTypes == null)
-      {
-        throw new FileNotFoundException("The mime types file was not found");
-      }
+      _mimeTypes = LoadMimeTypes(config.MimeTypesFile);
     }
 
-    public void AddRoute(Action<Stream, Request> requestHandler, Regex path=null, Regex host=null, bool closeConnection = true)
+    private static Dictionary<string, string> LoadMimeTypes(string path)
+    {
+      var schemaSet = new XmlSchemaSet();
+      var schemaReader = new XmlTextReader("config/schemas/mime-types.xsd");
+      schemaSet.Add("", schemaReader);
+
+      var document = XDocument.Load(path);
+      try
+      {
+        document.Validate(schemaSet, null);
+      }
+      catch (XmlSchemaValidationException e)
+      {
+        throw new XmlSchemaValidationException("Error while validating mime types document", e);
+      }
+
+      var types = document.Root?.Elements("type").ToDictionary(
+                    e => e.Element("extension")?.Value,
+                    e => e.Element("mime")?.Value
+                  ) ?? new Dictionary<string, string>();
+
+      return types;
+    }
+
+    public void AddRoute(Action<Stream, Request> requestHandler, Regex path = null, Regex host = null,
+      bool closeConnection = true)
     {
       _routes.Add(new Route(path, host, requestHandler, closeConnection));
     }
@@ -44,7 +64,7 @@ namespace com.tempestasludi.c.http_source.actors
         var location = Path.Combine(file, subPath);
         try
         {
-          SendFile(stream, new List<string>{location}
+          SendFile(stream, new List<string> {location}
             .Concat(_config.DefaultFiles.Select(df => Path.Combine(location, df)))
             .SkipWhile(f => !File.Exists(f))
             .First());
@@ -82,7 +102,7 @@ namespace com.tempestasludi.c.http_source.actors
         usedRoute.RequestHandler(stream, request);
         return usedRoute.CloseConnection;
       }
-      
+
       SendFile(stream, Path.Combine(_config.ErrorPagesDirectory, "404.html"), (404, "Not Found"));
 
       return true;
@@ -93,7 +113,9 @@ namespace com.tempestasludi.c.http_source.actors
   {
     public string ErrorPagesDirectory;
     public string MimeTypesFile = "config/mime-types.xml";
-    public string[] DefaultFiles = {
+
+    public string[] DefaultFiles =
+    {
       "index.xml",
       "index.html"
     };
