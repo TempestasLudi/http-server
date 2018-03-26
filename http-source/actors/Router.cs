@@ -44,12 +44,9 @@ namespace com.tempestasludi.c.http_source.actors
         var location = Path.Combine(file, subPath);
         try
         {
-          SendFile(stream, new[]
-            {
-              location,
-              Path.Combine(location, "index.xml"),
-              Path.Combine(location, "index.html")
-            }.SkipWhile(f => !File.Exists(f))
+          SendFile(stream, new List<string>{location}
+            .Concat(_config.DefaultFiles.Select(df => Path.Combine(location, df)))
+            .SkipWhile(f => !File.Exists(f))
             .First());
         }
         catch (InvalidOperationException)
@@ -96,6 +93,10 @@ namespace com.tempestasludi.c.http_source.actors
   {
     public string ErrorPagesDirectory;
     public string MimeTypesFile = "config/mime-types.xml";
+    public string[] DefaultFiles = {
+      "index.xml",
+      "index.html"
+    };
 
     public RouterConfig(string errorPagesDirectory)
     {
