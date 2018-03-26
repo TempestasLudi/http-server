@@ -14,11 +14,14 @@ namespace com.tempestasludi.c.http_source.util
     private readonly int _hostPort;
     private readonly bool _setHost;
 
-    public Proxy(string host, int hostPort = 80, bool setHost = false)
+    private readonly int _bufferSize;
+
+    public Proxy(string host, int hostPort = 80, bool setHost = false, int bufferSize = 1024)
     {
       _host = host;
       _setHost = setHost;
       _hostPort = hostPort;
+      _bufferSize = bufferSize;
     }
 
     public void Run(Stream clientStream, Request request)
@@ -42,7 +45,7 @@ namespace com.tempestasludi.c.http_source.util
           .Select(streams => new Thread(() =>
             {
               var (from, to) = streams;
-              var buffer = new byte[1024];
+              var buffer = new byte[_bufferSize];
               while (true)
               {
                 try
