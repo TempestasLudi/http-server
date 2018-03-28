@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Schema;
 using com.tempestasludi.c.http_source.data;
+using com.tempestasludi.c.http_source.util;
 
 namespace com.tempestasludi.c.http_source.actors
 {
@@ -27,26 +25,10 @@ namespace com.tempestasludi.c.http_source.actors
 
     private static Dictionary<string, string> LoadMimeTypes(string path)
     {
-      var schemaSet = new XmlSchemaSet();
-      var schemaReader = new XmlTextReader("config/schemas/mime-types.xsd");
-      schemaSet.Add("", schemaReader);
-
-      var document = XDocument.Load(path);
-      try
-      {
-        document.Validate(schemaSet, null);
-      }
-      catch (XmlSchemaValidationException e)
-      {
-        throw new XmlSchemaValidationException("Error while validating mime types document", e);
-      }
-
-      var types = document.Root?.Elements("type").ToDictionary(
-                    e => e.Element("extension")?.Value,
-                    e => e.Element("mime")?.Value
-                  ) ?? new Dictionary<string, string>();
-
-      return types;
+      return Xml.LoadValidate(path, "config/schemas/mime-types.xsd").Root?.Elements("type").ToDictionary(
+               e => e.Element("extension")?.Value,
+               e => e.Element("mime")?.Value
+             ) ?? new Dictionary<string, string>();
     }
 
     public void AddRoute(Action<Stream, Request> requestHandler, Regex path = null, Regex host = null,
