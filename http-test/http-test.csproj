@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="data\transferEncodings\IdentityTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="util\SessionDataStorageTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

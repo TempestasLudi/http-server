@@ -19,7 +19,7 @@ namespace com.tempestasludi.c.http_source.util
     /// Creates a new session.
     /// </summary>
     /// <returns>The session.</returns>
-    private Session CreateSession()
+    public Session CreateSession()
     {
       var session = new Session();
       _sessions[session.Id] = session;
@@ -32,7 +32,7 @@ namespace com.tempestasludi.c.http_source.util
     /// <param name="id">The id of the session to retrieve.</param>
     /// <returns>The session with the specified id.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when no session exists with the specified id.</exception>
-    private Session GetSession(Guid id)
+    public Session GetSession(Guid id)
     {
       if (_sessions.ContainsKey(id))
       {
@@ -46,7 +46,7 @@ namespace com.tempestasludi.c.http_source.util
     /// </summary>
     /// <param name="id">The id string of the session to retrieve.</param>
     /// <returns>The session with the specified id.</returns>
-    private Session GetSession(string id)
+    public Session GetSession(string id)
     {
       return GetSession(Guid.Parse(id));
     }
@@ -56,7 +56,7 @@ namespace com.tempestasludi.c.http_source.util
     /// </summary>
     public void Cleanup()
     {
-      _sessions = _sessions.Where(entry => entry.Value.Expiration <= DateTime.Now).ToDictionary(s => s.Key, s => s.Value);
+      _sessions = _sessions.Where(entry => entry.Value.Expiration >= DateTime.Now).ToDictionary(s => s.Key, s => s.Value);
     }
   }
 
@@ -69,7 +69,7 @@ namespace com.tempestasludi.c.http_source.util
     /// The id of the session.
     /// </summary>
     public readonly Guid Id = Guid.NewGuid();
-    
+
     /// <summary>
     /// The date when the session expires.
     /// </summary>
@@ -88,5 +88,38 @@ namespace com.tempestasludi.c.http_source.util
     {
       Expiration = DateTime.Now.AddHours(hourCount);
     }
+
+    /// <summary>
+    /// Checks equality between this session and another session.
+    /// </summary>
+    /// <param name="other">The session to check equality with.</param>
+    /// <returns>Whether this session equals the other session.</returns>
+    protected bool Equals(Session other)
+    {
+      return Id.Equals(other.Id);
+    }
+
+    /// <summary>
+    /// Checks equality between this session and another object.
+    /// </summary>
+    /// <param name="obj">The object to check equality with.</param>
+    /// <returns>Whether this session equals the other object.</returns>
+    public override bool Equals(object obj)
+    {
+      if (ReferenceEquals(null, obj)) return false;
+      if (ReferenceEquals(this, obj)) return true;
+      if (obj.GetType() != GetType()) return false;
+      return Equals((Session) obj);
+    }
+
+    /// <summary>
+    /// Generates the hash code for this session.
+    /// </summary>
+    /// <returns>The hash code for this session.</returns>
+    public override int GetHashCode()
+    {
+      return Id.GetHashCode();
+    }
+    
   }
 }
