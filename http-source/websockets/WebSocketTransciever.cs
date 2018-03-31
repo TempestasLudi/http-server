@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using com.tempestasludi.c.p23_http.data;
+using com.tempestasludi.c.http_source.data;
 
-namespace com.tempestasludi.c.p23_http.websockets
+namespace com.tempestasludi.c.http_source.websockets
 {
 	public static class WebSocketTransciever
 	{

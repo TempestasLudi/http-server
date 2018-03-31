@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace com.tempestasludi.c.p23_http.data.transferEncodings
+namespace com.tempestasludi.c.http_source.data.transferEncodings
 {
 	public abstract class TransferEncoding
 	{

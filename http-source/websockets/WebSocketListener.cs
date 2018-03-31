@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 
-namespace com.tempestasludi.c.p23_http.websockets
+namespace com.tempestasludi.c.http_source.websockets
 {
 	public static class WebSocketListener
 	{

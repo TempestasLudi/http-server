@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace com.tempestasludi.c.p23_http.data
+namespace com.tempestasludi.c.http_source.data
 {
 	public class Request : Message
 	{
