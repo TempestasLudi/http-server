@@ -8,7 +8,6 @@ namespace com.tempestasludi.c.http_source.data.transferEncodings
 	{
 		public Func<byte[]> DataSupplier = () => new byte[0];
 
-
 		public override string Name => "chunked";
 		
 		public override long GetContentLength(byte[] content)
