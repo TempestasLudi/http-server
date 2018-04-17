@@ -8,14 +8,35 @@ using com.tempestasludi.c.http_source.data;
 
 namespace com.tempestasludi.c.http_source.util
 {
+  /// <summary>
+  /// Relays a connection between a HTTP client and a HTTP server.
+  /// </summary>
   public class Proxy
   {
+    /// <summary>
+    /// The name of the server to connect to.
+    /// </summary>
     private readonly string _host;
+    
+    /// <summary>
+    /// The server port to connect to.
+    /// </summary>
     private readonly int _hostPort;
+    
+    /// <summary>
+    /// Whether the proxy should set the "host" field of a request before sending it on to the server.
+    /// </summary>
     private readonly bool _setHost;
 
     private readonly int _bufferSize;
 
+    /// <summary>
+    /// Creates a new proxy.
+    /// </summary>
+    /// <param name="host">The name of the server to connect to.</param>
+    /// <param name="hostPort">The server port to connect to.</param>
+    /// <param name="setHost">Whether the proxy should set the "host" field of a request before sending it on to the server.</param>
+    /// <param name="bufferSize">The size of the data buffer to use.</param>
     public Proxy(string host, int hostPort = 80, bool setHost = false, int bufferSize = 1024)
     {
       _host = host;
@@ -24,6 +45,11 @@ namespace com.tempestasludi.c.http_source.util
       _bufferSize = bufferSize;
     }
 
+    /// <summary>
+    /// Takes a client's request and their connection and starts relaying a connection between them and the server.
+    /// </summary>
+    /// <param name="clientStream">The connection of the client.</param>
+    /// <param name="request">The request of the client.</param>
     public void Run(Stream clientStream, Request request)
     {
       using (var serverClient = new TcpClient())
