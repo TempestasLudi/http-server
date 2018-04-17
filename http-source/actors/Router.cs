@@ -10,11 +10,10 @@ namespace com.tempestasludi.c.http_source.actors
 {
   public class Router
   {
+    private readonly RouterConfig _config;
     private readonly Dictionary<string, string> _mimeTypes;
 
     private readonly List<Route> _routes = new List<Route>();
-
-    private readonly RouterConfig _config;
 
     public Router(RouterConfig config)
     {
@@ -93,14 +92,14 @@ namespace com.tempestasludi.c.http_source.actors
 
   public class RouterConfig
   {
-    public string ErrorPagesDirectory;
-    public string MimeTypesFile = "config/mime-types.xml";
-
     public string[] DefaultFiles =
     {
       "index.xml",
       "index.html"
     };
+
+    public string ErrorPagesDirectory;
+    public string MimeTypesFile = "config/mime-types.xml";
 
     public RouterConfig(string errorPagesDirectory)
     {
@@ -110,10 +109,10 @@ namespace com.tempestasludi.c.http_source.actors
 
   internal class Route
   {
-    public readonly Regex PathRegex;
-    public readonly Regex HostRegex;
-    public readonly Action<Stream, Request> RequestHandler;
     public readonly bool CloseConnection;
+    public readonly Regex HostRegex;
+    public readonly Regex PathRegex;
+    public readonly Action<Stream, Request> RequestHandler;
 
     public Route(Regex pathRegex, Regex hostRegex, Action<Stream, Request> requestHandler, bool closeConnection)
     {

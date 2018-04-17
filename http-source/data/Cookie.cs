@@ -7,17 +7,16 @@ namespace com.tempestasludi.c.http_source.data
 {
   public class Cookie
   {
-    public string Name;
-    public string Value;
-
     public string Domain;
-    public string Path;
     public DateTime? Expires;
-    public long? MaxAge;
-    public bool? Secure;
     public bool? HttpOnly;
+    public long? MaxAge;
+    public string Name;
+    public string Path;
+    public bool? Secure;
 
     public bool UrlEncode = true;
+    public string Value;
 
     public Cookie(string name, string value, string domain = null, string path = null, DateTime? expires = null,
       long? maxAge = null, bool? secure = null, bool? httpOnly = null)
@@ -54,10 +53,7 @@ namespace com.tempestasludi.c.http_source.data
 
       parts.ToList().ForEach(p =>
       {
-        if (actions.ContainsKey(p.Item1))
-        {
-          actions[p.Item1](p.Item2);
-        }
+        if (actions.ContainsKey(p.Item1)) actions[p.Item1](p.Item2);
       });
 
       return resultCookie;

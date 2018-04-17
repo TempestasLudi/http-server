@@ -5,12 +5,12 @@ using System.Xml.Schema;
 namespace com.tempestasludi.c.http_source.util
 {
   /// <summary>
-  /// Utility class for XML functionality.
+  ///   Utility class for XML functionality.
   /// </summary>
   public static class Xml
   {
     /// <summary>
-    /// Loads a document and validates it with a schema.
+    ///   Loads a document and validates it with a schema.
     /// </summary>
     /// <param name="documentPath">The document to load.</param>
     /// <param name="schemaPath">The path of the schema to validate against.</param>

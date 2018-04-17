@@ -9,29 +9,32 @@ using com.tempestasludi.c.http_source.data;
 namespace com.tempestasludi.c.http_source.util
 {
   /// <summary>
-  /// Relays a connection between a HTTP client and a HTTP server.
+  ///   Relays a connection between a HTTP client and a HTTP server.
   /// </summary>
   public class Proxy
   {
     /// <summary>
-    /// The name of the server to connect to.
+    ///   The size of the data buffer to use.
     /// </summary>
-    private readonly string _host;
-    
-    /// <summary>
-    /// The server port to connect to.
-    /// </summary>
-    private readonly int _hostPort;
-    
-    /// <summary>
-    /// Whether the proxy should set the "host" field of a request before sending it on to the server.
-    /// </summary>
-    private readonly bool _setHost;
-
     private readonly int _bufferSize;
 
     /// <summary>
-    /// Creates a new proxy.
+    ///   The name of the server to connect to.
+    /// </summary>
+    private readonly string _host;
+
+    /// <summary>
+    ///   The server port to connect to.
+    /// </summary>
+    private readonly int _hostPort;
+
+    /// <summary>
+    ///   Whether the proxy should set the "host" field of a request before sending it on to the server.
+    /// </summary>
+    private readonly bool _setHost;
+
+    /// <summary>
+    ///   Creates a new proxy.
     /// </summary>
     /// <param name="host">The name of the server to connect to.</param>
     /// <param name="hostPort">The server port to connect to.</param>
@@ -46,7 +49,7 @@ namespace com.tempestasludi.c.http_source.util
     }
 
     /// <summary>
-    /// Takes a client's request and their connection and starts relaying a connection between them and the server.
+    ///   Takes a client's request and their connection and starts relaying a connection between them and the server.
     /// </summary>
     /// <param name="clientStream">The connection of the client.</param>
     /// <param name="request">The request of the client.</param>
@@ -57,10 +60,7 @@ namespace com.tempestasludi.c.http_source.util
         serverClient.Connect(_host, _hostPort);
         var serverStream = serverClient.GetStream();
 
-        if (_setHost)
-        {
-          request.Host = _host;
-        }
+        if (_setHost) request.Host = _host;
 
         request.Write(serverStream);
 
@@ -73,28 +73,18 @@ namespace com.tempestasludi.c.http_source.util
               var (from, to) = streams;
               var buffer = new byte[_bufferSize];
               while (true)
-              {
                 try
                 {
                   var length = from.Read(buffer, 0, buffer.Length);
-                  if (length == 0)
-                  {
-                    break;
-                  }
+                  if (length == 0) break;
 
-                  if (length > 0)
-                  {
-                    to.Write(buffer, 0, length);
-                  }
+                  if (length > 0) to.Write(buffer, 0, length);
                 }
                 catch (Exception e)
                 {
-                  if (e is IOException || e is ObjectDisposedException)
-                  {
-                    break;
-                  }
+                  if (e is IOException || e is ObjectDisposedException) break;
                 }
-              }
+
               halter.Start();
             }
           )).ToList();
