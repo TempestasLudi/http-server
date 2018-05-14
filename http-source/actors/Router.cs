@@ -2,28 +2,36 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using com.tempestasludi.c.http_source.data;
+using com.tempestasludi.c.http_source.util;
 
 namespace com.tempestasludi.c.http_source.actors
 {
   public class Router
   {
-    private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>
-    {
-      {"txt", "text/plain"},
-      {"json", "application/json"},
-      {"xml", "application/xml"},
-      {"html", "text/html"},
-      {"js", "application/javascript"},
-      {"css", "text/css"},
-      {"xsl", "text/xsl"}
-    };
+    private readonly RouterConfig _config;
+    private readonly Dictionary<string, string> _mimeTypes;
 
     private readonly List<Route> _routes = new List<Route>();
 
-    public void AddRoute(Action<Stream, Request> requestHandler, Regex path=null, Regex host=null, bool closeConnection = true)
+    public Router(RouterConfig config)
+    {
+      _config = config;
+
+      _mimeTypes = LoadMimeTypes(config.MimeTypesFile);
+    }
+
+    private static Dictionary<string, string> LoadMimeTypes(string path)
+    {
+      return Xml.LoadValidate(path, "config/schemas/mime-types.xsd").Root?.Elements("type").ToDictionary(
+               e => e.Element("extension")?.Value,
+               e => e.Element("mime")?.Value
+             ) ?? new Dictionary<string, string>();
+    }
+
+    public void AddRoute(Action<Stream, Request> requestHandler, Regex path = null, Regex host = null,
+      bool closeConnection = true)
     {
       _routes.Add(new Route(path, host, requestHandler, closeConnection));
     }
@@ -37,36 +45,28 @@ namespace com.tempestasludi.c.http_source.actors
         var location = Path.Combine(file, subPath);
         try
         {
-          SendFile(stream, new[]
-            {
-              location,
-              Path.Combine(location, "index.xml"),
-              Path.Combine(location, "index.html")
-            }.SkipWhile(f => !File.Exists(f))
+          SendFile(stream, new List<string> {location}
+            .Concat(_config.DefaultFiles.Select(df => Path.Combine(location, df)))
+            .SkipWhile(f => !File.Exists(f))
             .First());
         }
         catch (InvalidOperationException)
         {
-          new Response
-          {
-            Content = Encoding.UTF8.GetBytes("<html><body><h1>Not Found</h1></body></html>"),
-            ContentType = "text/html",
-            Status = "Not Found",
-            StatusCode = 404
-          }.Write(stream);
+          SendFile(stream, Path.Combine(_config.ErrorPagesDirectory, "404.html"), (404, "Not Found"));
         }
       }, path, host);
     }
 
-    private static void SendFile(Stream stream, string path)
+    private void SendFile(Stream stream, string path, (int, string)? status = null)
     {
       var extension = Path.GetExtension(path)?.Substring(1) ?? "";
+      var (statusCode, statusName) = status ?? (200, "OK");
       new Response
       {
         Content = File.ReadAllBytes(path),
-        ContentType = MimeTypes.ContainsKey(extension) ? MimeTypes[extension] : null,
-        Status = "OK",
-        StatusCode = 200
+        ContentType = _mimeTypes.ContainsKey(extension) ? _mimeTypes[extension] : null,
+        Status = statusName,
+        StatusCode = statusCode
       }.Write(stream);
     }
 
@@ -80,28 +80,39 @@ namespace com.tempestasludi.c.http_source.actors
 
       if (usedRoute != null)
       {
-        usedRoute?.RequestHandler(stream, request);
+        usedRoute.RequestHandler(stream, request);
         return usedRoute.CloseConnection;
       }
 
-      new Response
-      {
-        Content = Encoding.UTF8.GetBytes("<html><body><h1>Not Found</h1></body></html>"),
-        ContentType = "text/html",
-        Status = "Not Found",
-        StatusCode = 404
-      }.Write(stream);
+      SendFile(stream, Path.Combine(_config.ErrorPagesDirectory, "404.html"), (404, "Not Found"));
 
       return true;
     }
   }
 
+  public class RouterConfig
+  {
+    public string[] DefaultFiles =
+    {
+      "index.xml",
+      "index.html"
+    };
+
+    public string ErrorPagesDirectory;
+    public string MimeTypesFile = "config/mime-types.xml";
+
+    public RouterConfig(string errorPagesDirectory)
+    {
+      ErrorPagesDirectory = errorPagesDirectory;
+    }
+  }
+
   internal class Route
   {
-    public readonly Regex PathRegex;
-    public readonly Regex HostRegex;
-    public readonly Action<Stream, Request> RequestHandler;
     public readonly bool CloseConnection;
+    public readonly Regex HostRegex;
+    public readonly Regex PathRegex;
+    public readonly Action<Stream, Request> RequestHandler;
 
     public Route(Regex pathRegex, Regex hostRegex, Action<Stream, Request> requestHandler, bool closeConnection)
     {

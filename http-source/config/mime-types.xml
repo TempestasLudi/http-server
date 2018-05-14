@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<types>
+    <type>
+        <extension>css</extension>
+        <mime>text/css</mime>
+    </type>
+    <type>
+        <extension>html</extension>
+        <mime>text/html</mime>
+    </type>
+    <type>
+        <extension>js</extension>
+        <mime>application/javascript</mime>
+    </type>
+    <type>
+        <extension>json</extension>
+        <mime>application/json</mime>
+    </type>
+    <type>
+        <extension>txt</extension>
+        <mime>text/plain</mime>
+    </type>
+    <type>
+        <extension>xml</extension>
+        <mime>application/xml</mime>
+    </type>
+    <type>
+        <extension>xsl</extension>
+        <mime>text/xsl</mime>
+    </type>
+</types>
